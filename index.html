@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0f16">
+    <title>Compound Calculator</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* === RESET & BASIS === */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; padding: 0;
+            background-color: #05080c;
+            color: #f1f5f9;
+            font-family: 'Poppins', sans-serif;
+            /* Izinkan scroll bebas agar tidak ada konten yang terpotong */
+            overflow-y: auto; 
+            height: 100%;
+        }
+
+        /* === WARNA & VARIABEL === */
+        :root {
+            --gold: #D4AF37;
+            --gold-dim: #aa8c2c;
+            --bg-card: #111827;
+            --bg-input: #1f2937;
+            --text-muted: #94a3b8;
+            --profit: #4ade80;
+        }
+
+        /* === STRUKTUR HALAMAN === */
+        /* Kita gunakan satu container utama yang responsif */
+        .app-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 1rem;
+        }
+
+        /* === BAGIAN 1: MOTIVASI (DEFAULT) === */
+        #view-motivasi {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 90vh; /* Hampir full layar */
+            max-width: 600px;
+            margin: auto;
+            transition: opacity 0.3s ease;
+        }
+        
+        .logo { width: 120px; margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3)); }
+        
+        h1 {
+            font-size: 2.2rem; margin: 0 0 1rem 0; line-height: 1.2;
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        
+        p.quote { color: var(--text-muted); line-height: 1.6; margin-bottom: 2rem; font-size: 0.95rem; }
+
+        /* === BAGIAN 2: KALKULATOR (TERSEMBUNYI AWALNYA) === */
+        #view-kalkulator {
+            display: none; /* Disembunyikan dulu */
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Header Kalkulator */
+        .calc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .btn-back { background: none; border: 1px solid #374151; color: #fff; padding: 5px 12px; border-radius: 8px; cursor: pointer; }
+        .kurs-info { font-size: 0.8rem; color: var(--gold); text-align: right; }
+
+        /* Input Styles - PASTI KELIHATAN */
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input[type="number"] {
+            width: 100%; padding: 12px;
+            background: #000; /* Hitam pekat agar kontras */
+            border: 1px solid #374151;
+            border-radius: 8px;
+            color: #fff; font-size: 1.1rem; font-weight: 600;
+            outline: none;
+        }
+        input[type="number"]:focus { border-color: var(--gold); }
+
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Checkbox Area */
+        .checkbox-area {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 1.5rem;
+        }
+        .cb-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #e2e8f0; }
+        input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; }
+
+        /* Tombol Emas */
+        .btn-action {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #BF953F, #B38728);
+            border: none; border-radius: 10px;
+            color: #000; font-weight: 700; font-size: 1rem;
+            cursor: pointer; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .btn-action:active { transform: scale(0.98); }
+
+        /* Tabel Hasil */
+        .table-container {
+            width: 100%; overflow-x: auto;
+            border: 1px solid #374151; border-radius: 12px;
+            max-height: 400px; overflow-y: auto;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 300px; font-size: 0.85rem; }
+        th { 
+            background: #0f172a; padding: 12px; color: var(--gold); 
+            position: sticky; top: 0; z-index: 10; white-space: nowrap; text-align: right;
+        }
+        td { 
+            padding: 10px 12px; border-bottom: 1px solid #334155; 
+            text-align: right; white-space: nowrap; 
+        }
+        /* Kolom Hari Sticky di Kiri */
+        th:first-child, td:first-child {
+            position: sticky; left: 0; z-index: 11;
+            background: #1e293b; text-align: center; border-right: 1px solid #334155;
+        }
+        th:first-child { background: #0f172a; z-index: 12; }
+        
+        .val-usd { color: #fff; }
+        .val-profit { color: var(--profit); }
+        .symbol { color: var(--gold-dim); margin-right: 2px; font-size: 0.8em; }
+
+        /* Efek Tekan */
+        td.is-pressing { background-color: var(--gold) !important; color: #000 !important; }
+        td.is-pressing .val-usd, td.is-pressing .val-profit, td.is-pressing .symbol { color: #000 !important; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85); z-index: 999;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #1e293b; padding: 2rem; border-radius: 16px;
+            text-align: center; border: 1px solid var(--gold); min-width: 300px;
+        }
+        .close-modal { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        /* === PERBAIKAN LANDSCAPE === */
+        /* Kita TIDAK membelah layar. Kita biarkan tetap atas bawah agar aman */
+        @media (orientation: landscape) {
+            .app-container { padding-top: 10px; }
+            .logo { width: 80px; margin-bottom: 0.5rem; }
+            h1 { font-size: 1.5rem; }
+            .quote { margin-bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="view-motivasi">
+            <img src="logo.png" alt="Logo" class="logo"> <h1>Selamat Datang<br>di Compound</h1>
+            <p class="quote">
+                Setiap keuntungan kecil adalah benih emas. Konsistensi adalah kuncinya.
+            </p>
+            <button class="btn-action" style="max-width: 250px;" onclick="bukaKalkulator()">Mulai Simulasi</button>
+        </div>
+
+        <div id="view-kalkulator">
+            <div class="card">
+                <div class="calc-header">
+                    <button class="btn-back" onclick="tutupKalkulator()">&larr; Kembali</button>
+                    <div id="kursDisplay" class="kurs-info">Loading Kurs...</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Modal Awal (USDT)</label>
+                    <input type="number" id="modal" value="100">
+                </div>
+                
+                <div class="row-2">
+                    <div class="form-group">
+                        <label>Target Hari</label>
+                        <input type="number" id="targetHari" value="41">
+                    </div>
+                    <div class="form-group">
+                        <label>Profit per Sesi (%)</label>
+                        <input type="number" id="bep" value="0.85">
+                    </div>
+                </div>
+
+                <div class="checkbox-area">
+                    <label class="cb-item"><input type="checkbox" id="siang" checked> Siang</label>
+                    <label class="cb-item"><input type="checkbox" id="sinyal4"> Sinyal-4</label>
+                    <label class="cb-item"><input type="checkbox" id="sinyal3"> Sinyal-3</label>
+                    <label class="cb-item"><input type="checkbox" id="malam" checked> Malam</label>
+                </div>
+
+                <button class="btn-action" onclick="hitung()">Hitung Potensi</button>
+
+                <div class="table-container">
+                    <table id="tabelHasil">
+                        <thead>
+                            </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-box" style="position: relative;">
+            <span class="close-modal" onclick="tutupModal()">&times;</span>
+            <div id="modalUsd" style="color:#94a3b8; font-size: 1.2rem; margin-bottom: 5px;">$0.00</div>
+            <div id="modalIdr" style="color:#fff; font-size: 2rem; font-weight: bold;">Rp 0</div>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px;">Estimasi Rupiah</p>
+        </div>
+    </div>
+
+    <script>
+        // === LOGIKA UTAMA (SAMA PERSIS SEPERTI SEBELUMNYA) ===
+        
+        let kursLive = 16300;
+        const modalEl = document.getElementById('modalOverlay');
+
+        // Navigasi
+        function bukaKalkulator() {
+            document.getElementById('view-motivasi').style.display = 'none';
+            document.getElementById('view-kalkulator').style.display = 'block';
+            hitung(); // Auto hitung saat dibuka
+        }
+        function tutupKalkulator() {
+            document.getElementById('view-motivasi').style.display = 'flex';
+            document.getElementById('view-kalkulator').style.display = 'none';
+        }
+        function tutupModal() { modalEl.classList.remove('active'); }
+
+        // Ambil Kurs
+        async function fetchKurs() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+                const data = await res.json();
+                kursLive = data.tether.idr;
+                document.getElementById('kursDisplay').innerText = `1 USDT = Rp ${kursLive.toLocaleString('id-ID')}`;
+            } catch (e) {
+                document.getElementById('kursDisplay').innerText = `Kurs Manual: Rp ${kursLive.toLocaleString('id-ID')}`;
+            }
+        }
+
+        // Format Uang
+        function fmt(n) { return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+        function fmtIdr(n) { return n.toLocaleString('id-ID'); }
+
+        // Hitung Compounding
+        function hitung() {
+            const modal = parseFloat(document.getElementById('modal').value) || 0;
+            const hari = parseInt(document.getElementById('targetHari').value) || 1;
+            const persen = parseFloat(document.getElementById('bep').value) / 100 || 0;
+            
+            const active = {
+                s: document.getElementById('siang').checked,
+                s4: document.getElementById('sinyal4').checked,
+                s3: document.getElementById('sinyal3').checked,
+                m: document.getElementById('malam').checked
+            };
+
+            const thead = document.querySelector('#tabelHasil thead');
+            const tbody = document.querySelector('#tabelHasil tbody');
+            tbody.innerHTML = ''; thead.innerHTML = '';
+
+            // Buat Header
+            let h = '<tr><th>Hari</th><th>Modal Awal</th>';
+            if(active.s) h += '<th>Siang</th>';
+            if(active.s4) h += '<th>Sinyal-4</th>';
+            if(active.s3) h += '<th>Sinyal-3</th>';
+            if(active.m) h += '<th>Malam</th>';
+            h += '<th>Akhir</th><th>Total Profit</th></tr>';
+            thead.innerHTML = h;
+
+            let saldo = modal;
+            let totalProfit = 0;
+
+            for(let i=1; i<=hari; i++) {
+                let start = saldo;
+                let pS=0, pS4=0, pS3=0, pM=0;
+
+                if(active.s) { pS = saldo * persen; saldo += pS; }
+                if(active.s4) { pS4 = saldo * persen; saldo += pS4; }
+                if(active.s3) { pS3 = saldo * persen; saldo += pS3; }
+                if(active.m) { pM = saldo * persen; saldo += pM; }
+
+                let end = saldo;
+                let dailyProfit = end - start;
+                totalProfit += dailyProfit;
+
+                let row = `<tr>
+                    <td>${i}</td>
+                    <td data-v="${start}"><span class="symbol">$</span>${fmt(start)}</td>`;
+                
+                if(active.s) row += `<td class="val-profit" data-v="${pS}"><span class="symbol">$</span>${fmt(pS)}</td>`;
+                if(active.s4) row += `<td class="val-profit" data-v="${pS4}"><span class="symbol">$</span>${fmt(pS4)}</td>`;
+                if(active.s3) row += `<td class="val-profit" data-v="${pS3}"><span class="symbol">$</span>${fmt(pS3)}</td>`;
+                if(active.m) row += `<td class="val-profit" data-v="${pM}"><span class="symbol">$</span>${fmt(pM)}</td>`;
+
+                row += `<td class="val-usd" data-v="${end}"><span class="symbol">$</span>${fmt(end)}</td>
+                        <td class="val-profit" data-v="${totalProfit}"><span class="symbol">$</span>${fmt(totalProfit)}</td>
+                </tr>`;
+                
+                tbody.insertAdjacentHTML('beforeend', row);
+            }
+        }
+
+        // === INTERAKSI: KLIK & TAHAN (LOGIKA LAMA DIKEMBALIKAN) ===
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchKurs().then(hitung);
+            
+            const tbody = document.querySelector('tbody');
+            let timer;
+            let isLongPress = false;
+
+            // Start Touch/Click
+            const startHandler = (e) => {
+                const cell = e.target.closest('td');
+                if(!cell || !cell.hasAttribute('data-v')) return;
+                
+                isLongPress = false;
+                
+                // Cek apakah ini kolom Modal Akhir (Kolom ke-2 dari belakang)
+                const parent = cell.parentElement;
+                const idx = Array.from(parent.children).indexOf(cell);
+                const len = parent.children.length;
+                const isAkhirColumn = idx === len - 2;
+
+                timer = setTimeout(() => {
+                    if (isAkhirColumn) {
+                        isLongPress = true;
+                        cell.classList.add('is-pressing');
+                        
+                        // Copy ke input Modal
+                        const val = parseFloat(cell.getAttribute('data-v'));
+                        const inputModal = document.getElementById('modal');
+                        inputModal.value = val.toFixed(2);
+                        hitung(); // Refresh hitungan
+                        
+                        // Efek Visual Input Berkedip
+                        inputModal.style.borderColor = 'var(--profit)';
+                        setTimeout(() => inputModal.style.borderColor = '#374151', 500);
+                    }
+                }, 600); // 0.6 Detik tahan
+            };
+
+            const endHandler = (e) => {
+                clearTimeout(timer);
+                const cell = e.target.closest('td');
+                if(cell) cell.classList.remove('is-pressing');
+
+                if (!isLongPress && cell && cell.hasAttribute('data-v')) {
+                    // Klik Biasa -> Tampilkan Modal Rupiah
+                    const val = parseFloat(cell.getAttribute('data-v'));
+                    document.getElementById('modalUsd').innerHTML = `$ ${fmt(val)}`;
+                    document.getElementById('modalIdr').innerText = `Rp ${fmtIdr(val * kursLive)}`;
+                    modalEl.classList.add('active');
+                }
+            };
+
+            const cancelHandler = () => {
+                clearTimeout(timer);
+                const pressing = document.querySelector('.is-pressing');
+                if(pressing) pressing.classList.remove('is-pressing');
+            };
+
+            tbody.addEventListener('mousedown', startHandler);
+            tbody.addEventListener('touchstart', startHandler, {passive: true});
+            
+            tbody.addEventListener('mouseup', endHandler);
+            tbody.addEventListener('touchend', endHandler);
+            
+            tbody.addEventListener('mousemove', cancelHandler);
+            tbody.addEventListener('touchmove', cancelHandler);
+        });
+
+    </script>
+</body>
+</html>
