@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang di Compound</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+
+    <style>
+        /* 1. RESET & BASE STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            font-family: 'Poppins', sans-serif; /* Font body text */
+            background-color: #0a0f16; /* Fallback color */
+            /* Background Gradient Gelap Mewah (Deep Navy ke Black) */
+            background: radial-gradient(circle at center, #1a253a 0%, #05080c 100%);
+            color: #e2e8f0;
+            overflow-x: hidden; /* Mencegah scroll samping */
+        }
+
+        /* 2. CONTAINER UTAMA (Kunci Keseimbangan) */
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Tengah secara vertikal */
+            align-items: center;     /* Tengah secara horizontal */
+            min-height: 100vh;       /* Full layar */
+            padding: 2rem;           /* Jarak aman dari pinggir layar */
+            text-align: center;
+        }
+
+        /* 3. LOGO / GAMBAR ATAS */
+        .logo-container {
+            margin-bottom: 1.5rem;
+            /* Efek bayangan halus di bawah logo/icon jika ada */
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+        
+        /* Atur ukuran gambar logo Anda di sini */
+        .logo-container img {
+            max-width: 120px; /* Ukuran logo proporsional */
+            height: auto;
+        }
+
+        /* 4. TYPOGRAPHY JUDUL */
+        h1 {
+            font-family: 'Playfair Display', serif; /* Font Elegan */
+            font-size: 2.5rem;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: #D4AF37; /* Warna Emas Metalik (Metallic Gold) */
+            
+            /* Efek Emas Berkilau (Gradient Text) */
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            
+            /* Agar tetap terbaca jika gradient gagal load */
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 5. TYPOGRAPHY TEXT BODY */
+        p {
+            font-size: 1rem;
+            line-height: 1.8; /* Spasi antar baris agar mudah dibaca */
+            color: #94a3b8;   /* Warna abu-abu kebiruan (Soft) */
+            max-width: 600px; /* Membatasi lebar teks agar tidak terlalu panjang di landscape */
+            margin: 0 auto;   /* Tengah */
+            font-weight: 300;
+        }
+
+        /* Highlight kata penting */
+        p strong {
+            color: #FCF6BA;
+            font-weight: 400;
+        }
+
+        /* 6. MEDIA QUERIES (RESPONSIVE) */
+
+        /* Tampilan Landscape di HP (Tinggi layar pendek) */
+        @media screen and (max-height: 500px) {
+            .container {
+                padding: 3rem 1rem; /* Tambah padding atas bawah agar bisa discroll */
+                justify-content: flex-start; /* Biarkan konten mulai dari atas jika di-scroll */
+            }
+            h1 {
+                font-size: 1.8rem; /* Kecilkan font judul */
+                margin-bottom: 1rem;
+            }
+            .logo-container {
+                margin-bottom: 0.5rem;
+            }
+            .logo-container img {
+                max-width: 80px; /* Kecilkan logo di landscape */
+            }
+        }
+
+        /* Tampilan Portrait HP Kecil */
+        @media screen and (max-width: 400px) {
+            h1 {
+                font-size: 2rem;
+            }
+            p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo-container">
+            <img src="path/to/your/logo.png" alt="Logo Compound"> 
+            </div>
+
+        <h1>Selamat Datang di<br>Compound</h1>
+
+        <p>
+            Setiap keuntungan kecil yang Anda putar kembali adalah <strong>benih</strong> untuk pohon kekayaan di masa depan. 
+            <br><br>
+            Temukan kekuatan <em>compounding</em> dan biarkan waktu bekerja untuk Anda.
+        </p>
+    </div>
+
+</body>
+</html>
