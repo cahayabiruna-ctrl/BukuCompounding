@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0f16">
+    <title>Compound - Premium Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* === 1. BASE & VARIABLES === */
+        :root {
+            --bg-deep: #05080c;
+            --glass-bg: rgba(20, 25, 40, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-gold: #D4AF37;
+            --gold-gradient: linear-gradient(135deg, #BF953F 0%, #FCF6BA 40%, #B38728 70%, #FBF5B7 100%);
+            --button-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            --profit-color: #4ade80;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            height: 100%; width: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            color: var(--text-primary);
+            overflow: hidden; /* Default hidden, tapi akan di-override di slide */
+        }
+
+        /* === 2. SLIDE STRUCTURE (FIXED SCROLL) === */
+        .slide {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            padding: 1.5rem;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s;
+            /* PENTING: Izinkan scroll jika konten kepanjangan */
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+            
+            /* Flexbox default untuk portrait */
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        #slide1 { z-index: 2; transform: translateY(0); opacity: 1; }
+        #slide2 { z-index: 1; transform: translateY(100%); opacity: 0; pointer-events: none; }
+
+        body.kalkulator-aktif #slide1 { transform: translateY(-30%); opacity: 0; pointer-events: none; }
+        body.kalkulator-aktif #slide2 { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+        /* === 3. HERO SECTION (Slide 1) === */
+        #slide1 .content-wrapper {
+            text-align: center; max-width: 600px; width: 100%;
+            /* Pastikan ada jarak untuk scroll */
+            padding-bottom: 2rem; 
+        }
+        
+        .logo { 
+            width: 140px; margin-bottom: 2rem; 
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.2));
+            transition: width 0.3s; 
+        }
+        
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-bottom: 1rem;
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 1rem; color: var(--text-secondary); line-height: 1.6;
+            margin-bottom: 2rem; font-weight: 300;
+        }
+
+        /* === 4. CALCULATOR LAYOUT === */
+        .glass-panel {
+            width: 100%; max-width: 500px;
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            padding: 1.5rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            margin: auto; /* Biar tengah saat di-scroll */
+        }
+
+        /* Elements Style */
+        .input-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.4rem; letter-spacing: 1px; text-transform: uppercase; }
+        input[type="number"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #334155; padding: 0.8rem; border-radius: 12px; color: #fff; font-size: 1rem; }
+        input[type="number"]:focus { outline: none; border-color: var(--accent-gold); }
+        
+        .btn-gold {
+            width: 100%; padding: 1rem; border: none; border-radius: 12px;
+            background: var(--gold-gradient); color: #1e293b;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            box-shadow: var(--button-shadow); margin-top: 1rem;
+        }
+        .btn-back {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;
+            margin-bottom: 1rem; display: inline-block;
+        }
+
+        /* Table Style */
+        .table-wrapper { margin-top: 1.5rem; border-radius: 12px; overflow: auto; border: 1px solid rgba(255,255,255,0.05); max-height: 300px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #0f172a; position: sticky; top: 0; padding: 1rem; color: var(--accent-gold); white-space: nowrap; z-index: 10;}
+        td { padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; white-space: nowrap; }
+        td:first-child, th:first-child { position: sticky; left: 0; background: #1e293b; z-index: 11; text-align: center; border-right: 1px solid rgba(255,255,255,0.1); }
+        th:first-child { z-index: 12; background: #0f172a; }
+        .val-gold { color: var(--accent-gold); } .val-profit { color: var(--profit-color); }
+        td.is-pressing { background-color: var(--accent-gold) !important; color: #000 !important; }
+
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: #1e293b; padding: 2rem; border-radius: 20px; text-align: center; width: 90%; max-width: 320px; border: 1px solid var(--accent-gold); }
+
+        /* === 5. EMERGENCY LANDSCAPE FIX (SOLUSI MASALAH ANDA) === */
+        
+        /* Jika tinggi layar kurang dari 500px (Posisi Tidur/Landscape) */
+        @media (max-height: 500px) {
+            
+            /* Ubah layout Slide 1 agar TIDAK centering paksa, melainkan block scroll */
+            #slide1 {
+                display: block !important; /* Matikan flex center */
+                overflow-y: scroll !important; /* Paksa Scroll aktif */
+                padding: 1rem !important;
+            }
+            
+            #slide1 .content-wrapper {
+                margin: 0 auto;
+                padding-top: 10px;
+                padding-bottom: 40px; /* Space bawah biar tombol gak kepotong */
+            }
+
+            /* Kecilkan elemen drastis agar muat */
+            .logo { width: 60px !important; margin-bottom: 0.5rem !important; }
+            h1 { font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+            p { font-size: 0.85rem !important; margin-bottom: 1rem !important; display: none; /* Sembunyikan teks deskripsi panjang jika perlu, atau biarkan kecil */ }
+            /* Opsi: Tampilkan paragraf tapi pendek */
+            p { display: block; max-width: 90%; margin: 0 auto 1rem auto; line-height: 1.4; } 
+
+            .btn-gold { padding: 0.6rem !important; font-size: 0.9rem !important; max-width: 250px; }
+
+            /* Layout Kalkulator Landscape */
+            .glass-panel { 
+                display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; 
+                max-width: 95%; padding: 1rem;
+                height: auto; min-height: 100%; /* Biar bisa scroll */
+            }
+            .calc-grid { grid-column: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+            .table-wrapper { grid-column: 2; grid-row: 1 / span 5; margin: 0; height: 300px; max-height: 70vh; }
+            h2 { font-size: 1.2rem; grid-column: 1 / -1; margin-bottom: 0.5rem; }
+            .btn-back { position: relative; top: 0; left: 0; width: fit-content; margin-bottom: 0.5rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="slide1" class="slide">
+        <div class="content-wrapper">
+            <img src="logo.png" alt="Logo" class="logo">
+            
+            <h1>Selamat Datang<br>di Compound</h1>
+            <p>
+                Setiap keuntungan kecil adalah benih emas.
+                Temukan kekuatan compounding yang mengubah konsistensi menjadi kekayaan.
+            </p>
+            <button class="btn-gold" style="max-width: 200px; margin: 0 auto;" onclick="tampilkanKalkulator()">Mulai Simulasi</button>
+        </div>
+    </div>
+
+    <div id="slide2" class="slide">
+        <div class="glass-panel">
+            <div style="grid-column: 1/-1; display: flex; align-items: center; justify-content: space-between;">
+                <button class="btn-back" onclick="tampilkanMotivasi()">&larr; Kembali</button>
+                <div id="kursDisplay" style="font-size: 0.8rem; color: #94a3b8;">Loading Kurs...</div>
+            </div>
+
+            <div class="calc-grid">
+                <div>
+                    <label style="color:#94a3b8; font-size:0.75rem;">MODAL (USDT)</label>
+                    <input type="number" id="modal" value="100">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1"><label style="color:#94a3b8; font-size:0.75rem;">HARI</label><input type="number" id="targetHari" value="41"></div>
+                    <div style="flex:1"><label style="color:#94a3b8; font-size:0.75rem;">PROFIT %</label><input type="number" id="bep" value="0.85"></div>
+                </div>
+                <div style="background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:8px; display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                    <label style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:#fff;"><input type="checkbox" id="siang" checked> Siang</label>
+                    <label style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:#fff;"><input type="checkbox" id="sinyal4"> Sinyal-4</label>
+                    <label style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:#fff;"><input type="checkbox" id="sinyal3"> Sinyal-3</label>
+                    <label style="display:flex;align-items:center;gap:5px;font-size:0.8rem;color:#fff;"><input type="checkbox" id="malam" checked> Malam</label>
+                </div>
+                <button class="btn-gold" onclick="hitungCompounding()">HITUNG</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="hasilTabel">
+                    <thead></thead><tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="konversiModal" class="modal-overlay">
+        <div class="modal-box">
+            <span id="modalClose" style="position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer;color:#fff;">&times;</span>
+            <div id="modalUsdValue" style="font-size:1.2rem;color:#94a3b8;"></div>
+            <div id="modalIdrValue" style="font-size:2rem;font-weight:700;color:#fff;margin:10px 0;"></div>
+        </div>
+    </div>
+
+    <script>
+        function tampilkanKalkulator() { document.body.classList.add('kalkulator-aktif'); }
+        function tampilkanMotivasi() { document.body.classList.remove('kalkulator-aktif'); }
+
+        let liveKurs = 16300; 
+        const fmtIdr = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+
+        async function getKurs() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+                const data = await res.json();
+                liveKurs = parseFloat(data.tether.idr);
+                document.getElementById('kursDisplay').innerText = `1 USDT = ${fmtIdr.format(liveKurs)}`;
+            } catch (e) { document.getElementById('kursDisplay').innerText = `Kurs Manual: ${fmtIdr.format(liveKurs)}`; }
+        }
+
+        function fmtUsd(v) { return `<span class="val-gold">$</span>${v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
+
+        function hitungCompounding() {
+            const modal = parseFloat(document.getElementById('modal').value)||0;
+            const hari = parseInt(document.getElementById('targetHari').value)||1;
+            const bep = parseFloat(document.getElementById('bep').value)/100||0;
+            const aktif = { s: document.getElementById('siang').checked, s4: document.getElementById('sinyal4').checked, s3: document.getElementById('sinyal3').checked, m: document.getElementById('malam').checked };
+
+            const tbody = document.querySelector('#hasilTabel tbody');
+            const thead = document.querySelector('#hasilTabel thead');
+            tbody.innerHTML = ''; thead.innerHTML = '';
+
+            let h = '<tr><th>Hari</th><th>Modal</th>';
+            if(aktif.s) h+='<th>Siang</th>'; if(aktif.s4) h+='<th>Sinyal4</th>'; if(aktif.s3) h+='<th>Sinyal3</th>'; if(aktif.m) h+='<th>Malam</th>';
+            h+='<th>Akhir</th><th>Total</th></tr>';
+            thead.innerHTML = h;
+
+            let saldo = modal, totalP = 0;
+            for(let i=1; i<=hari; i++){
+                let start = saldo, pS=0, pS4=0, pS3=0, pM=0;
+                if(aktif.s) { pS=saldo*bep; saldo+=pS; }
+                if(aktif.s4) { pS4=saldo*bep; saldo+=pS4; }
+                if(aktif.s3) { pS3=saldo*bep; saldo+=pS3; }
+                if(aktif.m) { pM=saldo*bep; saldo+=pM; }
+                let end = saldo; totalP += (end-start);
+
+                let r = `<tr><td>${i}</td><td data-v="${start}">${fmtUsd(start)}</td>`;
+                if(aktif.s) r+=`<td class="val-profit" data-v="${pS}">${fmtUsd(pS)}</td>`;
+                if(aktif.s4) r+=`<td class="val-profit" data-v="${pS4}">${fmtUsd(pS4)}</td>`;
+                if(aktif.s3) r+=`<td class="val-profit" data-v="${pS3}">${fmtUsd(pS3)}</td>`;
+                if(aktif.m) r+=`<td class="val-profit" data-v="${pM}">${fmtUsd(pM)}</td>`;
+                r+=`<td data-v="${end}">${fmtUsd(end)}</td><td class="val-profit" data-v="${totalP}">${fmtUsd(totalP)}</td></tr>`;
+                tbody.insertAdjacentHTML('beforeend', r);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getKurs().then(hitungCompounding);
+            
+            // Modal Logic
+            const modal = document.getElementById('konversiModal');
+            document.getElementById('modalClose').onclick = () => modal.classList.remove('active');
+            
+            // Interaction Logic (Click & Long Press)
+            const tbody = document.querySelector('tbody');
+            let timer, isLong;
+            
+            const handleStart = (e) => {
+                const cell = e.target.closest('td');
+                if(!cell) return;
+                isLong = false;
+                timer = setTimeout(() => {
+                    const row = cell.parentElement; 
+                    // Cek jika kolom adalah 'Modal Akhir' (kolom ke-2 dari kanan)
+                    if(row.children[row.children.length-2] === cell) {
+                        isLong = true;
+                        cell.classList.add('is-pressing');
+                        const val = parseFloat(cell.getAttribute('data-v'));
+                        if(val) {
+                            const inp = document.getElementById('modal');
+                            inp.value = val.toFixed(2);
+                            hitungCompounding();
+                            inp.style.borderColor = 'var(--profit-color)';
+                            setTimeout(()=>inp.style.borderColor='',500);
+                        }
+                    }
+                }, 600);
+            };
+            const handleEnd = (e) => {
+                clearTimeout(timer);
+                const cell = e.target.closest('td');
+                if(cell) cell.classList.remove('is-pressing');
+                
+                if(!isLong && cell) {
+                    const val = parseFloat(cell.getAttribute('data-v'));
+                    if(val) {
+                        document.getElementById('modalUsdValue').innerHTML = fmtUsd(val);
+                        document.getElementById('modalIdrValue').innerText = fmtIdr.format(val*liveKurs);
+                        modal.classList.add('active');
+                    }
+                }
+            };
+
+            tbody.addEventListener('touchstart', handleStart, {passive:true});
+            tbody.addEventListener('touchend', handleEnd);
+            tbody.addEventListener('mousedown', handleStart);
+            tbody.addEventListener('mouseup', handleEnd);
+            tbody.addEventListener('touchmove', () => clearTimeout(timer));
+        });
+    </script>
+</body>
+</html>
